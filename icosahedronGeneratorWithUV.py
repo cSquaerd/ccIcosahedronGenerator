@@ -111,7 +111,7 @@ for n in range(12):
 			# See if any of the third stage neighbors are
 			# the original vertex; This means we have a triangle
 			if n in getNeighbors(k):
-				t = tuple(sorted([n, m, k]))
+				t = tuple(sorted([n + 1, m + 1, k + 1]))
 				if t not in triangles:
 					triangles.append(t)
 				else:
@@ -119,23 +119,23 @@ for n in range(12):
 			else:
 				continue
 for t in triangles:
-	print(triangles.index(t), ':', t)
+	print(triangles.index(t) + 1, ':', t)
 # Generate 20 normal vectors for the faces
 triangleData = {}
 neededCrossProdRedo = []
 for t in triangles:
 	# Get two edges of the triangle
-	e1 = vecDiff(vertices[t[1]], vertices[t[0]])
-	e2 = vecDiff(vertices[t[2]], vertices[t[0]])
+	e1 = vecDiff(vertices[t[1] - 1], vertices[t[0] - 1])
+	e2 = vecDiff(vertices[t[2] - 1], vertices[t[0] - 1])
 	# Calculate the normal
 	n = normalize(crossProd(e1, e2))
 	# Check if the normal is pointing the right way
-	if vecAngle(n, vertices[t[0]]) > 90.0:
+	if vecAngle(n, vertices[t[0] - 1]) > 90.0:
 		# Fix the normal if its pointing the wrong way
 		n = normalize(crossProd(e2, e1))
 		# Mark the triangle for fixing later
-		neededCrossProdRedo.append(triangles.index(t))
-	triangleData[triangles.index(t)] = { \
+		neededCrossProdRedo.append(triangles.index(t) + 1)
+	triangleData[triangles.index(t) + 1] = { \
 		"vertices" : t, \
 		"normal": tuple(n) \
 	}
@@ -156,15 +156,15 @@ for k in neededCrossProdRedo:
 # use the face-vertices pairs to assign every face the correct UV vertices
 
 # Numeric representation of my own UV map (see github for picture)
-aboveFaces = (0, 2, 4, 5, 7, 12, 13, 14, 15, 18)
-aboveUVVertices = {n for n in range(11)}
-belowFaces = (1, 3, 6, 8, 9, 10, 11, 16, 17, 19)
-belowUVVertices = {n for n in range(11, 24)}
+aboveFaces = (1, 3, 5, 6, 8, 13, 14, 15, 16, 19)
+aboveUVVertices = {n for n in range(1, 12)}
+belowFaces = (2, 4, 7, 9, 10, 11, 12, 17, 18, 20)
+belowUVVertices = {n for n in range(12, 25)}
 
-leftFaces = (0, 5, 8, 9, 13, 16, 17, 18, 19)
-leftUVVertices = {n for n in range(5, 18)}
-rightFaces = (1, 2, 3, 4, 6, 10, 11, 14, 15)
-rightUVVertices = {n for n in range(6)} | {n for n in range(17, 24)}
+leftFaces = (1, 3, 9, 10, 16, 17, 18, 19, 20)
+leftUVVertices = {n for n in range(6, 19)}
+rightFaces = (2, 4, 6, 7, 8, 11, 12, 13, 14)
+rightUVVertices = {n for n in range(1, 7)} | {n for n in range(18, 25)}
 # Measures of each equilateral triangle on UV Map
 side = 0.25
 height = math.tan(60 * math.pi / 180) / 8
@@ -185,17 +185,17 @@ verticesUV = [
 ]
 # One-to-Many relation between real vertices and possible UV vertices
 realToUV = [
-	{2, 10, 19}, {9, 18}, {3, 8, 11, 12}, {20},
-	{5, 21}, {1, 17}, {5, 13}, {4, 17},
-	{0, 8, 22, 23}, {14}, {6, 16}, {2, 7, 15}
+	{10, 19}, {3, 11, 20}, {4, 9, 12, 13}, {21},
+	{2, 18}, {6, 22}, {5, 18}, {6, 14},
+	{1, 9, 23, 24}, {15}, {3, 8, 16}, {7, 17}
 ]
-upUVVertices = [8, 20, 4, 21, 4, 5, 17, 5, 11, 12, 23, 22, 5, 5, 1, 1, 13, 17, 8, 14]
+#upUVVertices = [8, 20, 4, 21, 4, 5, 17, 5, 11, 12, 23, 22, 5, 5, 1, 1, 13, 17, 8, 14]
 # Derive ordered UV vertices for every face
 for face in triangleData.keys():
 	realVertices = triangleData[face]["vertices"]
 	# perform a Set Union to start
-	possibleUVVertices = \
-		realToUV[realVertices[0]] | realToUV[realVertices[1]] | realToUV[realVertices[2]]
+	possibleUVVertices = realToUV[realVertices[0] - 1] \
+		| realToUV[realVertices[1] - 1] | realToUV[realVertices[2] - 1]
 	print(
 		'[' + format(face, " >2d") + "] All:",
 		format(str(possibleUVVertices), " <32s"),
@@ -213,13 +213,13 @@ for face in triangleData.keys():
 	elif face in rightFaces:
 		possibleUVVertices = possibleUVVertices & rightUVVertices
 	# Special cases on the pentagonal pyramids at the seam
-	if face in (8, 11): # Lefthand faces (thus the actual vertices have locally low u values)
+	if face in (10, 11): # Lefthand faces (thus the actual vertices have locally low u values)
 		possibleUVVertices = possibleUVVertices - {
-			max(possibleUVVertices, key = lambda v : verticesUV[v][0])
+			max(possibleUVVertices, key = lambda v : verticesUV[v - 1][0])
 		}
-	elif face in (9, 10): # Righthand faces (thus the actual vertices have locally high u values)
+	elif face in (9, 12): # Righthand faces (thus the actual vertices have locally high u values)
 		possibleUVVertices = possibleUVVertices - {
-			min(possibleUVVertices, key = lambda v : verticesUV[v][0])
+			min(possibleUVVertices, key = lambda v : verticesUV[v - 1][0])
 		}
 
 	print("Filtered Full", format(str(possibleUVVertices), " <16s"), end = ";\n")
@@ -227,24 +227,24 @@ for face in triangleData.keys():
 	# They need to be in the same order as the real vertices though,
 	# but it is known what real vertices correspond to which UV vertices,
 	# so do an intersection per real vertex and use the sole element
-	orderedUVs = [
-		tuple(possibleUVVertices.intersection(realToUV[r]))[0]
-		for r in realVertices
-	]
+	#orderedUVs = [
+	#	tuple(possibleUVVertices.intersection(realToUV[r]))[0]
+	#	for r in realVertices
+	#]
 	# Swap the two vertices that make an underline for the number (if this were a d20)
 	# Otherwise the textures will appear mirrored
-	topVertexIndex = orderedUVs.index(upUVVertices[face])
-	swapIndices = list({0, 1, 2} - {topVertexIndex})
-	i = swapIndices[0]
-	j = swapIndices[1]
-	temp = orderedUVs[i]
-	orderedUVs[i] = orderedUVs[j]
-	orderedUVs[j] = temp
+	#topVertexIndex = orderedUVs.index(upUVVertices[face])
+	#swapIndices = list({0, 1, 2} - {topVertexIndex})
+	#i = swapIndices[0]
+	#j = swapIndices[1]
+	#temp = orderedUVs[i]
+	#orderedUVs[i] = orderedUVs[j]
+	#orderedUVs[j] = temp
 
-	print("Real Vertices:", format(str(realVertices), " <20s"), end = "; ")
-	print("Ordered UV Vertices:", format(str(orderedUVs), " <20s"))
+	#print("Real Vertices:", format(str(realVertices), " <20s"), end = "; ")
+	#print("Ordered UV Vertices:", format(str(orderedUVs), " <20s"))
 
-	triangleData[face]["UVs"] = orderedUVs
+	triangleData[face]["UVs"] = list(possibleUVVertices)#orderedUVs
 
 # Show all the triangle data, which is vertices (real and UV) and normals
 for n in triangleData.keys():
@@ -262,26 +262,16 @@ if input("Write a new .obj file? [Y/n]: ").upper() == 'Y':
 	objFile = open("ccIcosahedronWithUV.obj", 'w')
 	for v in vertices:
 		objFile.write("v " + ' '.join(map(str, v)) + '\n')
-	#s = 1
 	for v in verticesUV:
-		#print(s, v)
-		#s += 1
 		objFile.write("vt " + ' '.join(map(str, v)) + '\n')
-	for k in range(20):
-		objFile.write("vn ")
-		s = 0
-		for c in triangleData[k]["normal"]:
-			objFile.write(str(c))
-			if s < 2:
-				objFile.write(' ')
-			s += 1
-		objFile.write('\n')
-	for k in range(20):
+	for k in range(1, 21):
+		objFile.write("vn " + ' '.join(map(str, triangleData[k]["normal"])) + '\n')
+	for k in range(1, 21):
 		objFile.write("f ")
 		face = triangleData[k]
-		normal = k + 1
+		normal = k
 		for n in range(3):
-			objFile.write('/'.join(map(str, [face["vertices"][n] + 1, face["UVs"][n] + 1, normal])))
+			objFile.write('/'.join(map(str, [face["vertices"][n], face["UVs"][n], normal])))
 			if n < 2:
 				objFile.write(' ')
 		objFile.write('\n')
