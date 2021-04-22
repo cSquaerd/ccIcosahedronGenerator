@@ -11,6 +11,7 @@
 [heli]: manymanyicosahedra.gif
 [uv1]: UVNotes1.jpg
 [uv2]: UVNotes2.jpg
+[finished]: result.jpg
 
 An icosahedron is the largest of the five Platonic Solids (by face count).
 It captivated me when I was taking my first Computer Graphics course due to my use of it as a 20 sided die, or d20 as it is known, in my long-running D&D sessions with friends.
@@ -32,6 +33,11 @@ After some fine tuning, I was able to map the UV vertices to their Real counterp
 
 It was at this point I read a bit more about the file format I was using, Wavefront OBJ, and realized that it's a right handed coordinate system;
 With how I had drawn the slices of the icosahedron to map UV vertices to Real vertices, I was using a left handed coordinate system.
-Without getting to more into what all that means, to fix it I simply had to redraw the slices, this time with the z-axis pointing down (not up), and redo my relations, and ... (to be continued)
+Without getting to more into what all that means, to fix it I simply had to redraw the slices, this time with the z-axis pointing down (not up), and redo my relations, and ...
 
 ![][uv2]
+
+After many off-by-one errors, it worked.
+To understand the full algorithm, I leave as an exercise to the reader to follow the carefully commented code, along with running the program for yourself.
+
+![][finished]
