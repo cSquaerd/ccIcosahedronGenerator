@@ -1,3 +1,7 @@
+# By Charles "Charlie" "The Gnarly" Cook
+# Begun April 2019
+# Perfected April 2021
+# Dedicated to Kevin Ausitn, Charles Surrett, and Haim Levkowitz
 import scipy.constants as spc
 import math
 import json
@@ -189,7 +193,6 @@ realToUV = [
 	{2, 18}, {6, 22}, {5, 18}, {6, 14},
 	{1, 9, 23, 24}, {15}, {3, 8, 16}, {7, 17}
 ]
-#upUVVertices = [8, 20, 4, 21, 4, 5, 17, 5, 11, 12, 23, 22, 5, 5, 1, 1, 13, 17, 8, 14]
 # Derive ordered UV vertices for every face
 for face in triangleData.keys():
 	realVertices = triangleData[face]["vertices"]
@@ -227,24 +230,15 @@ for face in triangleData.keys():
 	# They need to be in the same order as the real vertices though,
 	# but it is known what real vertices correspond to which UV vertices,
 	# so do an intersection per real vertex and use the sole element
-	#orderedUVs = [
-	#	tuple(possibleUVVertices.intersection(realToUV[r]))[0]
-	#	for r in realVertices
-	#]
-	# Swap the two vertices that make an underline for the number (if this were a d20)
-	# Otherwise the textures will appear mirrored
-	#topVertexIndex = orderedUVs.index(upUVVertices[face])
-	#swapIndices = list({0, 1, 2} - {topVertexIndex})
-	#i = swapIndices[0]
-	#j = swapIndices[1]
-	#temp = orderedUVs[i]
-	#orderedUVs[i] = orderedUVs[j]
-	#orderedUVs[j] = temp
+	orderedUVs = [
+		tuple(possibleUVVertices.intersection(realToUV[r - 1]))[0]
+		for r in realVertices
+	]
 
-	#print("Real Vertices:", format(str(realVertices), " <20s"), end = "; ")
-	#print("Ordered UV Vertices:", format(str(orderedUVs), " <20s"))
+	print("Real Vertices:", format(str(realVertices), " <20s"), end = "; ")
+	print("Ordered UV Vertices:", format(str(orderedUVs), " <20s"))
 
-	triangleData[face]["UVs"] = list(possibleUVVertices)#orderedUVs
+	triangleData[face]["UVs"] = orderedUVs
 
 # Show all the triangle data, which is vertices (real and UV) and normals
 for n in triangleData.keys():
